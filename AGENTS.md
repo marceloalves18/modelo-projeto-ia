@@ -156,7 +156,8 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ```bash
 scripts/verificar.sh            # verificação completa (testes + checagens do repo)
 scripts/verificar.sh --staged   # só as checagens do que está no stage (o pre-commit usa este)
-tests/testar_protecoes.sh       # só os testes das proteções (pre-commit, verificar.sh, hooks do Claude)
+tests/testar_protecoes.sh       # só os testes das proteções (pre-commit, verificar.sh, hooks do Claude e do Codex)
+scripts/comparar-modelo.sh      # o que mudou no modelo-projeto-ia desde que este projeto saiu dele (só lê)
 ```
 
 <!-- PREENCHER: rodar a aplicação; rodar testes por categoria/arquivo; cobertura mínima. Os testes em si entram em `scripts/verificar.sh`. -->
@@ -194,7 +195,7 @@ A lista do que é `segredo` e do que é `dado` está em [`.caminhos-protegidos`]
 
 - `docs/modulos/` — detalhe por área, lido sob demanda pelo [Mapa de leitura](#mapa-de-leitura).
 - `docs/planejamentos/` — um arquivo por decisão ou plano (`AAAA-MM-DD_assunto.md`, modelo em `_modelo.md`), com contexto, decisão, alternativas e andamento.
-- `docs/procedimentos/` — guias de setup e operação.
+- `docs/procedimentos/` — guias de setup e operação. Trazer melhorias do modelo: `atualizar-do-modelo.md`.
 
 Consulte antes de propor mudanças nas áreas já documentadas.
 

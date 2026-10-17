@@ -12,7 +12,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 REPO="$TMP/repo"
 
-for arquivo in scripts/verificar.sh .githooks/pre-commit .claude/hooks/guarda.py .claude/hooks/sessao.sh; do
+for arquivo in scripts/verificar.sh scripts/comparar-modelo.sh .githooks/pre-commit .claude/hooks/guarda.py .claude/hooks/sessao.sh; do
     mkdir -p "$REPO/$(dirname "$arquivo")"
     cp "$RAIZ/$arquivo" "$REPO/$arquivo"
 done
@@ -264,6 +264,16 @@ git -C "$TMP/outra-maquina" push -q origin main 2> /dev/null
 confere "sessão: avisa cópia atrás do remoto" sim "$(aviso 'atrás do remoto')"
 git pull -q --rebase
 confere "sessão: sem aviso depois do pull" não "$(aviso 'atrás do remoto')"
+
+# --- scripts/comparar-modelo.sh (com um "modelo" local, sem rede) ---------
+confere "comparar-modelo: igual ao modelo" sim "$(MODELO_URL="$TMP/remoto.git" contem 'iguais aos do modelo' scripts/comparar-modelo.sh)"
+echo '# mudança local' >> .claude/hooks/sessao.sh
+confere "comparar-modelo: acusa arquivo diferente" sim "$(MODELO_URL="$TMP/remoto.git" contem 'diferente:          .claude/hooks/sessao.sh' scripts/comparar-modelo.sh)"
+git checkout -q -- .claude/hooks/sessao.sh
+rm .githooks/pre-commit
+confere "comparar-modelo: acusa arquivo que falta" sim "$(MODELO_URL="$TMP/remoto.git" contem 'falta no projeto:   .githooks/pre-commit' scripts/comparar-modelo.sh)"
+git checkout -q -- .githooks/pre-commit
+confere "comparar-modelo: não altera nada" "" "$(git status --porcelain)"
 
 if (( falhas > 0 )); then
     echo "testar_protecoes.sh: $falhas de $total testes falharam." >&2
