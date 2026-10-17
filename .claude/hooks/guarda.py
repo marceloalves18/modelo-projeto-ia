@@ -120,6 +120,9 @@ def _relativo_ao_repo(absoluto):
 
 
 def _checar_segredo(relativo, regras):
+    # "permitido" vale antes dos outros tipos (ex.: .env.exemplo apesar de "segredo .env.*").
+    if any(tipo == "permitido" and _casa(relativo, padrao) for tipo, padrao in regras):
+        return
     for tipo, padrao in regras:
         if tipo == "segredo" and _casa(relativo, padrao):
             _bloquear(

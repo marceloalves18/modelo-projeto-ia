@@ -54,6 +54,7 @@ As regras têm **ID estável** (`[R-…]`): cite sempre pelo ID, nunca por núme
 
 - **[R-PROTEGIDOS]** Os caminhos protegidos do projeto estão listados **num lugar só**: o arquivo [`.caminhos-protegidos`](./.caminhos-protegidos) na raiz (ver [Gestão de Dados](#gestão-de-dados-e-visibilidade)). Dois tipos:
   - `segredo` — **nunca** ler, exibir, modificar nem versionar (credenciais, tokens, chaves, cookies de sessão).
+  - `permitido` — exceção que vale antes dos outros dois, para um arquivo que casa com um padrão de `segredo` mas não é segredo (ex.: `.env.exemplo`, que lista as variáveis sem valores e **deve** ser versionado).
   - `dado` — dado real de uso; pode ser lido, mas **nunca entra num commit** sem ordem explícita do usuário, dada na própria sessão, para aquele commit específico (autorização não vale para outros commits nem para sessões futuras).
   - Ao montar um commit: confira `git status` e `git diff --stat`, use `git add <arquivo>` específico. **Proibido** `git add -A`, `git add .`, `git commit -a` e `--no-verify`.
   *Por quê:* dado real muda pelo uso normal da aplicação; commitá-lo mistura ruído com o trabalho real e arrisca versionar segredo por engano.
@@ -176,7 +177,9 @@ E instalar o **gitleaks ≥ 8.19** (`[R-SETUP]`) — comandos no [README](./READ
 
 ## Variáveis de Ambiente
 
-<!-- PREENCHER: nome, para que serve, obrigatória ou não. Nunca registrar valores reais aqui. Valores ficam em `.env` (que é `segredo`). -->
+Os valores ficam em `.env` (`segredo`: nenhum agente lê). Os **nomes** ficam em `.env.exemplo`, versionado e `permitido`, com cada variável e um valor fictício ou vazio — é nele que pessoas e agentes descobrem o que precisa ser configurado. Variável nova entra no `.env.exemplo` no mesmo commit do código que a usa.
+
+<!-- PREENCHER: nome, para que serve, obrigatória ou não. Nunca registrar valores reais aqui. -->
 
 ## Gestão de Dados e Visibilidade
 

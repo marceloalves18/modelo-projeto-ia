@@ -16,11 +16,15 @@ for arquivo in scripts/verificar.sh scripts/comparar-modelo.sh .githooks/pre-com
     mkdir -p "$REPO/$(dirname "$arquivo")"
     cp "$RAIZ/$arquivo" "$REPO/$arquivo"
 done
+# "permitido" fica por último de propósito: tem que valer antes do segredo
+# independentemente da ordem das linhas.
 cat > "$REPO/.caminhos-protegidos" << 'EOF'
 segredo .env
+segredo .env.*
 segredo auth.json
 segredo credentials/*
 dado    *.xlsx
+permitido .env.exemplo
 EOF
 
 cd "$REPO" || exit 1
@@ -81,6 +85,12 @@ confere "commit de arquivo comum" passa "$(tentar_commit env)"
 
 echo X=1 > .env && git add -f .env
 confere "segredo .env (forçado com -f)" bloqueia "$(tentar_commit env)"
+
+echo X=1 > .env.local && git add -f .env.local
+confere "segredo por padrão (.env.*)" bloqueia "$(tentar_commit env)"
+
+echo X= > .env.exemplo && git add .env.exemplo
+confere "permitido vence segredo (.env.exemplo)" passa "$(tentar_commit env)"
 
 mkdir -p sub && echo '{}' > sub/auth.json && git add sub/auth.json
 confere "segredo pelo nome em subpasta" bloqueia "$(tentar_commit env)"
@@ -174,6 +184,8 @@ confere "Write no rascunho do agente" libera "$(arquivo Write "$rascunho")"
 confere "Read de segredo" bloqueia "$(arquivo Read "$REPO/.env")"
 confere "Read de segredo em subpasta" bloqueia "$(arquivo Read sub/auth.json)"
 confere "Read de dado" libera "$(arquivo Read planilha.xlsx)"
+confere "Read de permitido (.env.exemplo)" libera "$(arquivo Read .env.exemplo)"
+confere "Read de segredo por padrão (.env.local)" bloqueia "$(arquivo Read .env.local)"
 confere "Edit em .githooks/pre-commit" pergunta "$(arquivo Edit "$REPO/.githooks/pre-commit")"
 confere "Edit em .caminhos-protegidos" pergunta "$(arquivo Edit .caminhos-protegidos)"
 confere "Edit em .codex/hooks.json" pergunta "$(arquivo Edit .codex/hooks.json)"
@@ -187,6 +199,7 @@ confere "git commit -n" bloqueia "$(bash_cmd 'git commit -n -m msg')"
 confere "--no-verify" bloqueia "$(bash_cmd 'git push --no-verify origin main')"
 confere "commit normal e --amend" libera "$(bash_cmd 'git commit -m "feat(x): adiciona" && git commit --amend --no-edit')"
 confere "cat de segredo" bloqueia "$(bash_cmd 'cat .env')"
+confere "cat de permitido (.env.exemplo)" libera "$(bash_cmd 'cat .env.exemplo')"
 confere "grep em segredo" bloqueia "$(bash_cmd 'grep token ./sub/auth.json')"
 confere "redirecionar para fora do repo" bloqueia "$(bash_cmd 'echo oi > ~/nota.md')"
 confere "tee para fora do repo" bloqueia "$(bash_cmd 'ls | tee /var/tmp/x.txt')"
@@ -225,6 +238,7 @@ patch() {
 mkdir -p "$REPO/sub"
 confere "Codex: patch dentro do repo" libera "$(hook_codex "$REPO" apply_patch "$(patch 'Add File' docs/x.md)")"
 confere "Codex: patch em segredo" bloqueia "$(hook_codex "$REPO" apply_patch "$(patch 'Update File' .env)")"
+confere "Codex: patch em permitido (.env.exemplo)" libera "$(hook_codex "$REPO" apply_patch "$(patch 'Update File' .env.exemplo)")"
 confere "Codex: patch fora do repo" bloqueia "$(hook_codex "$REPO" apply_patch "$(patch 'Add File' ../../fora.md)")"
 confere "Codex: patch movendo para ~/.codex" bloqueia "$(hook_codex "$REPO" apply_patch "$(printf '*** Begin Patch\n*** Update File: docs/x.md\n*** Move to: ~/.codex/memoria.md\n*** End Patch\n')")"
 confere "Codex: raiz pelo git a partir de subpasta" libera "$(hook_codex "$REPO/sub" apply_patch "$(patch 'Add File' ../docs/y.md)")"

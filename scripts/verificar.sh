@@ -52,7 +52,17 @@ else
     lista_cmd=(git ls-files -z)
 fi
 
+# "permitido" vale antes dos outros tipos (ex.: .env.exemplo apesar de "segredo .env.*").
+permitido() {
+    local i
+    for i in "${!padroes[@]}"; do
+        [[ "${tipos[$i]}" == "permitido" ]] && casa "$1" "${padroes[$i]}" && return 0
+    done
+    return 1
+}
+
 while IFS= read -r -d '' arquivo; do
+    permitido "$arquivo" && continue
     for i in "${!padroes[@]}"; do
         casa "$arquivo" "${padroes[$i]}" || continue
         case "${tipos[$i]}" in
