@@ -103,10 +103,12 @@ As regras acima são o **porquê**; estas ferramentas são a **garantia**. Elas 
 | Camada | Onde | O que bloqueia | Vale para |
 |---|---|---|---|
 | Git (pre-commit) | `.githooks/pre-commit` → `scripts/verificar.sh --staged` | arquivo `segredo`/`dado` no stage, `AGENTS.md` > 28 KB, `CONTEXT.md` > 20 KB, segredo no conteúdo (gitleaks ≥ 8.19; sem ele, avisa e deixa passar) | qualquer pessoa ou agente que commitar, **depois do setup** |
-| GitHub (servidor) | configuração do repositório | push direto sem passar pelas regras da branch; segredo no push (secret scanning) | todos, sem depender de setup local |
+| GitHub Actions | `.github/workflows/verificar.yml` | roda o `scripts/verificar.sh` completo, com gitleaks, a cada push: acusa o que escapou de qualquer máquina (setup não feito, `--no-verify`) | todos, sem depender de setup local |
+| GitHub (servidor) | configuração do repositório | push direto sem passar pelas regras da branch; segredo no push (secret scanning) | todos, se o plano da conta permitir |
 | Claude Code | `.claude/settings.json` + `.claude/hooks/` | gravação fora do repo, acesso a `segredo`, `git add -A`/`.`, `--no-verify`; pede confirmação em comando destrutivo; avisa no início se a cópia está atrás do remoto, se o pre-commit não está instalado ou se falta o gitleaks; desliga a memória automática | só o Claude Code |
 
 - **Commit autorizado de um `dado`:** só com ordem explícita do usuário para aquele commit, e então `PERMITIR_DADOS=1 git commit …`. Não existe exceção para `segredo`.
+- **Falha no GitHub Actions** (✗ vermelho no commit): o problema já está no remoto. Corrija com um commit novo; se for segredo, **troque o segredo** (ele já vazou para o histórico) antes de qualquer outra coisa, e avise o usuário.
 - **GitHub:** em *Settings → Branches*, proteja a branch principal; em *Settings → Code security*, ligue o *secret scanning* e a *push protection* se o plano da conta permitir em repositório privado. <!-- PREENCHER: registrar aqui o que foi ligado. -->
 - **Outros agentes** (Codex, Gemini…) não passam pelos hooks do Claude: para eles, a proteção é o pre-commit e o GitHub.
 
@@ -135,6 +137,7 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ├── .caminhos-protegidos      segredos e dados reais (lista única)
 ├── .githooks/                hooks de git versionados
 ├── .claude/                  configuração e hooks do Claude Code (versionados)
+├── .github/workflows/        verificação no GitHub a cada push
 ├── scripts/verificar.sh      verificação única do projeto
 ├── tests/testar_protecoes.sh testes das proteções (rodam dentro do verificar.sh)
 └── docs/
