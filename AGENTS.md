@@ -157,6 +157,8 @@ Obrigatório em **cada máquina** e para **cada pessoa** (o pre-commit não se i
 git config core.hooksPath .githooks
 ```
 
+Recomendado: **gitleaks ≥ 8.19** (o do `apt` do Ubuntu 24.04 é 8.16 e não serve), para o pre-commit achar segredo dentro dos arquivos — instalação no [README](./README.md#antes-de-começar-obrigatório-em-cada-máquina). Sem ele o pre-commit funciona, mas só barra pelos nomes de `.caminhos-protegidos`.
+
 <!-- PREENCHER: venv e dependências (ex. `python3 -m venv venv && venv/bin/pip install -r requirements.txt`), variáveis de ambiente, binários necessários. -->
 
 ## Variáveis de Ambiente
