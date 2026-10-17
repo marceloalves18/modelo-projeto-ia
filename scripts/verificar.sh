@@ -95,8 +95,10 @@ if command -v gitleaks > /dev/null 2>&1; then
         gitleaks git --pre-commit --staged --redact --no-banner \
             || falha "gitleaks encontrou possível segredo no que está no stage."
     else
-        gitleaks dir . --redact --no-banner \
-            || falha "gitleaks encontrou possível segredo nos arquivos."
+        # Só o que é versionado (histórico inteiro): arquivo ignorado, como venv/ ou
+        # cookie local, não é problema do repositório.
+        gitleaks git --redact --no-banner \
+            || falha "gitleaks encontrou possível segredo no histórico do repositório."
     fi
 elif [[ "$MODO" == "completo" ]]; then
     echo "⚠ gitleaks não instalado: conteúdo dos arquivos não foi varrido em busca de segredos." >&2
