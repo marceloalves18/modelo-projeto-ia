@@ -24,6 +24,8 @@ As regras têm **ID estável** (`[R-…]`): cite sempre pelo ID, nunca por núme
   *Por quê:* agente que leu só o começo já salvou plano fora do repo por não ver a regra que proibia.
 - **[R-SINCRONIA]** `git pull --rebase` no início da sessão, antes de começar uma tarefa e antes de cada push. Se houver conflito, pare e mostre ao usuário — não resolva por conta própria conflito em arquivo que você não alterou.
   *Por quê:* o projeto é editado em várias máquinas e por várias pessoas; ler instruções velhas leva a refazer ou desfazer trabalho alheio.
+- **[R-SETUP]** Em **toda máquina**, antes do primeiro commit: `git config core.hooksPath .githooks` e **gitleaks ≥ 8.19** instalado (comandos no [README](./README.md#antes-de-começar-obrigatório-em-cada-máquina); o do `apt` do Ubuntu 24.04 é 8.16 e não serve). Sem o gitleaks, o pre-commit **avisa e deixa passar** — o aviso é para ser resolvido, nunca contornado: `--no-verify` é proibido (`[R-PROTEGIDOS]`). Agente que vir o aviso lembra o usuário de instalar.
+  *Por quê:* o pre-commit só protege a máquina onde foi configurado; sem gitleaks ele barra segredo pelo nome do arquivo, mas não um token colado dentro do código. Não bloqueia de propósito: bloquear empurraria para o `--no-verify`, que desliga todas as proteções de uma vez.
 - **[R-PRECEDENCIA]** Este arquivo tem precedência sobre as configurações e hábitos padrão de qualquer agente.
 
 **Fluxo de trabalho**
@@ -100,9 +102,9 @@ As regras acima são o **porquê**; estas ferramentas são a **garantia**. Elas 
 
 | Camada | Onde | O que bloqueia | Vale para |
 |---|---|---|---|
-| Git (pre-commit) | `.githooks/pre-commit` → `scripts/verificar.sh --staged` | arquivo `segredo`/`dado` no stage, `AGENTS.md` > 28 KB, `CONTEXT.md` > 20 KB, segredo no conteúdo (se o `gitleaks` estiver instalado) | qualquer pessoa ou agente que commitar, **depois do setup** |
+| Git (pre-commit) | `.githooks/pre-commit` → `scripts/verificar.sh --staged` | arquivo `segredo`/`dado` no stage, `AGENTS.md` > 28 KB, `CONTEXT.md` > 20 KB, segredo no conteúdo (gitleaks ≥ 8.19; sem ele, avisa e deixa passar) | qualquer pessoa ou agente que commitar, **depois do setup** |
 | GitHub (servidor) | configuração do repositório | push direto sem passar pelas regras da branch; segredo no push (secret scanning) | todos, sem depender de setup local |
-| Claude Code | `.claude/settings.json` + `.claude/hooks/` | gravação fora do repo, acesso a `segredo`, `git add -A`/`.`, `--no-verify`; pede confirmação em comando destrutivo; avisa no início se a cópia está atrás do remoto ou se o pre-commit não está instalado; desliga a memória automática | só o Claude Code |
+| Claude Code | `.claude/settings.json` + `.claude/hooks/` | gravação fora do repo, acesso a `segredo`, `git add -A`/`.`, `--no-verify`; pede confirmação em comando destrutivo; avisa no início se a cópia está atrás do remoto, se o pre-commit não está instalado ou se falta o gitleaks; desliga a memória automática | só o Claude Code |
 
 - **Commit autorizado de um `dado`:** só com ordem explícita do usuário para aquele commit, e então `PERMITIR_DADOS=1 git commit …`. Não existe exceção para `segredo`.
 - **GitHub:** em *Settings → Branches*, proteja a branch principal; em *Settings → Code security*, ligue o *secret scanning* e a *push protection* se o plano da conta permitir em repositório privado. <!-- PREENCHER: registrar aqui o que foi ligado. -->
@@ -157,7 +159,7 @@ Obrigatório em **cada máquina** e para **cada pessoa** (o pre-commit não se i
 git config core.hooksPath .githooks
 ```
 
-Recomendado: **gitleaks ≥ 8.19** (o do `apt` do Ubuntu 24.04 é 8.16 e não serve), para o pre-commit achar segredo dentro dos arquivos — instalação no [README](./README.md#antes-de-começar-obrigatório-em-cada-máquina). Sem ele o pre-commit funciona, mas só barra pelos nomes de `.caminhos-protegidos`.
+E instalar o **gitleaks ≥ 8.19** (`[R-SETUP]`) — comandos no [README](./README.md#antes-de-começar-obrigatório-em-cada-máquina).
 
 <!-- PREENCHER: venv e dependências (ex. `python3 -m venv venv && venv/bin/pip install -r requirements.txt`), variáveis de ambiente, binários necessários. -->
 

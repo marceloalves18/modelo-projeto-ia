@@ -89,19 +89,23 @@ for par in "AGENTS.md:$LIMITE_AGENTS" "CONTEXT.md:$LIMITE_CONTEXT"; do
     fi
 done
 
-# --- Segredo no conteúdo (opcional) ---------------------------------------
-if command -v gitleaks > /dev/null 2>&1; then
-    if [[ "$MODO" == "staged" ]]; then
-        gitleaks git --pre-commit --staged --redact --no-banner \
-            || falha "gitleaks encontrou possível segredo no que está no stage."
-    else
-        # Só o que é versionado (histórico inteiro): arquivo ignorado, como venv/ ou
-        # cookie local, não é problema do repositório.
-        gitleaks git --redact --no-banner \
-            || falha "gitleaks encontrou possível segredo no histórico do repositório."
-    fi
-elif [[ "$MODO" == "completo" ]]; then
-    echo "⚠ gitleaks não instalado: conteúdo dos arquivos não foi varrido em busca de segredos." >&2
+# --- Segredo no conteúdo ([R-SETUP]) -------------------------------------
+# Sem gitleaks >= 8.19 o commit passa com aviso: bloquear levaria ao --no-verify,
+# que desliga também a checagem por nome acima.
+GITLEAKS_MINIMO="8.19.0"
+gitleaks_versao="$(gitleaks version 2> /dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+if [[ -z "$gitleaks_versao" ]]; then
+    echo "⚠ gitleaks não instalado nesta máquina: segredo dentro dos arquivos não é varrido. Instale (README.md) — [R-SETUP]." >&2
+elif [[ "$(printf '%s\n' "$GITLEAKS_MINIMO" "$gitleaks_versao" | sort -V | head -1)" != "$GITLEAKS_MINIMO" ]]; then
+    echo "⚠ gitleaks $gitleaks_versao é antigo (mínimo $GITLEAKS_MINIMO): varredura de conteúdo pulada. Instale a release oficial (README.md) — [R-SETUP]." >&2
+elif [[ "$MODO" == "staged" ]]; then
+    gitleaks git --pre-commit --staged --redact --no-banner \
+        || falha "gitleaks encontrou possível segredo no que está no stage."
+else
+    # Só o que é versionado (histórico inteiro): arquivo ignorado, como venv/ ou
+    # cookie local, não é problema do repositório.
+    gitleaks git --redact --no-banner \
+        || falha "gitleaks encontrou possível segredo no histórico do repositório."
 fi
 
 # --- Testes do projeto (só no modo completo) ------------------------------

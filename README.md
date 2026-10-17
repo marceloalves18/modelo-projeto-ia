@@ -10,7 +10,7 @@ cd <pasta>
 git config core.hooksPath .githooks    # liga o pre-commit — sem isso você fica sem proteção
 ```
 
-**gitleaks** (recomendado): o pre-commit usa para achar segredo dentro dos arquivos; sem ele, só barra pelos nomes de `.caminhos-protegidos`. Precisa da versão **8.19 ou mais nova** — a do `apt` do Ubuntu 24.04 (8.16) não serve. Instalação da release oficial, sem sudo (Linux x64; outros sistemas: [página de releases](https://github.com/gitleaks/gitleaks/releases)):
+**gitleaks** (obrigatório em cada máquina, `[R-SETUP]` no AGENTS.md): o pre-commit usa para achar segredo dentro dos arquivos; sem ele, só barra pelos nomes de `.caminhos-protegidos`. Precisa da versão **8.19 ou mais nova** — a do `apt` do Ubuntu 24.04 (8.16) não serve. Instalação da release oficial, sem sudo (Linux x64; outros sistemas: [página de releases](https://github.com/gitleaks/gitleaks/releases)):
 
 ```bash
 V=8.30.1

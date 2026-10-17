@@ -21,6 +21,13 @@ if [[ "$(git config core.hooksPath)" != ".githooks" ]]; then
     avisos+=("O pre-commit NÃO está instalado nesta máquina: peça ao usuário para rodar 'git config core.hooksPath .githooks' (README.md).")
 fi
 
+gitleaks_versao="$(gitleaks version 2> /dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)"
+if [[ -z "$gitleaks_versao" ]]; then
+    avisos+=("O gitleaks não está instalado nesta máquina: o pre-commit não varre segredo dentro dos arquivos. Lembre o usuário de instalar (README.md) — [R-SETUP].")
+elif [[ "$(printf '%s\n' 8.19.0 "$gitleaks_versao" | sort -V | head -1)" != "8.19.0" ]]; then
+    avisos+=("O gitleaks desta máquina ($gitleaks_versao) é anterior à 8.19 e é ignorado pelo pre-commit. Lembre o usuário de instalar a release oficial (README.md) — [R-SETUP].")
+fi
+
 if [[ -n "$(git status --porcelain 2> /dev/null)" ]]; then
     avisos+=("Há alterações não commitadas — podem ser trabalho de outra sessão ou agente. Antes de mexer nelas, veja docs/planejamentos/ (seção Andamento) e o CONTEXT.md ([R-PASSAGEM]).")
 fi
