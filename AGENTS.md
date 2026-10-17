@@ -73,7 +73,7 @@ As regras têm **ID estável** (`[R-…]`): cite sempre pelo ID, nunca por núme
 
 **Qualidade**
 
-- **[R-VERIFICAR]** A verificação do projeto é **um comando só**: `scripts/verificar.sh`. Qualquer agente e qualquer pessoa rodam o mesmo comando e têm o mesmo resultado — não reinvente a verificação em prosa. Se o projeto ganhar um passo de verificação novo, ele entra no script.
+- **[R-VERIFICAR]** A verificação do projeto é **um comando só**: `scripts/verificar.sh`. Qualquer agente e qualquer pessoa rodam o mesmo comando e têm o mesmo resultado — não reinvente a verificação em prosa. Se o projeto ganhar um passo de verificação novo, ele entra no script. Ao mexer numa proteção (`.githooks/`, `scripts/verificar.sh`, `.claude/hooks/`), o caso novo entra em `tests/testar_protecoes.sh` — e tem que falhar sem a mudança (`[R-REGRESSAO]`).
 - **[R-COMMIT]** Um commit por assunto (funcionalidade, bug, solução, documentação), nunca um commit com tudo da sessão. Cada commit coerente sozinho (compila, testes que ele toca passam) e em ordem que faça sentido. Assuntos misturados no mesmo arquivo: separe por trechos (`git add -p`). Mensagem `tipo(escopo): resumo` (`feat`, `fix`, `docs`, `test`, `refactor`, `wip`), em português, dizendo o **porquê**. Documentação em commit próprio no fim, salvo quando for a única mudança. **Nunca** commitar sem o usuário pedir.
 - **[R-REGRESSAO]** Todo bug corrigido ganha um teste que **falha sem a correção** (confira revertendo ou mutando o trecho) e passa com ela. Vai no mesmo commit do `fix`, e a mensagem cita o nome do teste. Bug só visual ou de infraestrutura: diga isso no commit e registre a validação manual. Não vale para texto, estilo ou documentação.
 - **[R-LIB-REAL]** Código que monta argumentos para biblioteca externa (agendador, cliente MQTT/HTTP, automação de navegador, pandas, LDAP, framework web…) tem **ao menos um teste com a biblioteca real** — mock aceita qualquer argumento e esconde exatamente o erro que a biblioteca daria. Use a biblioteca real sempre que ela não tiver efeito externo.
@@ -136,6 +136,7 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ├── .githooks/                hooks de git versionados
 ├── .claude/                  configuração e hooks do Claude Code (versionados)
 ├── scripts/verificar.sh      verificação única do projeto
+├── tests/testar_protecoes.sh testes das proteções (rodam dentro do verificar.sh)
 └── docs/
     ├── modulos/              detalhe por área (lido sob demanda)
     ├── planejamentos/        decisões e planos em andamento
@@ -147,6 +148,7 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ```bash
 scripts/verificar.sh            # verificação completa (testes + checagens do repo)
 scripts/verificar.sh --staged   # só as checagens do que está no stage (o pre-commit usa este)
+tests/testar_protecoes.sh       # só os testes das proteções (pre-commit, verificar.sh, hooks do Claude)
 ```
 
 <!-- PREENCHER: rodar a aplicação; rodar testes por categoria/arquivo; cobertura mínima. Os testes em si entram em `scripts/verificar.sh`. -->

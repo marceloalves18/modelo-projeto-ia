@@ -108,12 +108,15 @@ else
         || falha "gitleaks encontrou possível segredo no histórico do repositório."
 fi
 
-# --- Testes do projeto (só no modo completo) ------------------------------
-if [[ "$MODO" == "completo" ]]; then
+# --- Testes (só no modo completo) -----------------------------------------
+# DENTRO_DO_TESTE: a cópia descartável do tests/testar_protecoes.sh não roda testes.
+if [[ "$MODO" == "completo" && -z "${DENTRO_DO_TESTE:-}" ]]; then
+    tests/testar_protecoes.sh || falha "testes das proteções (tests/testar_protecoes.sh)."
+
     # PREENCHER: comandos de teste/lint do projeto. Exemplo para Python:
     #   venv/bin/ruff format --check . || falha "formatação"
     #   venv/bin/pytest -q             || falha "testes"
-    echo "⚠ nenhum teste configurado em scripts/verificar.sh (seção PREENCHER)." >&2
+    echo "⚠ nenhum teste do projeto configurado em scripts/verificar.sh (seção PREENCHER)." >&2
 fi
 
 if (( falhas > 0 )); then
