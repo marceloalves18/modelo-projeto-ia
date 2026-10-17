@@ -29,6 +29,7 @@ git config user.email teste@exemplo.invalid
 git config user.name teste
 git config core.hooksPath .githooks
 export DENTRO_DO_TESTE=1   # o verificar.sh da cópia não chama estes testes de novo
+unset GITHUB_REPOSITORY    # no GitHub Actions do modelo, a cópia se passaria pelo próprio modelo
 git add .caminhos-protegidos scripts .githooks .claude
 git commit -q -m base > /dev/null 2>&1 || { echo "✗ commit base falhou" >&2; exit 1; }
 
@@ -105,6 +106,7 @@ confere "avisa PREENCHER pendente" sim "$(contem 'por preencher' scripts/verific
 git remote add origin https://github.com/alguem/modelo-projeto-ia.git
 confere "no próprio modelo não avisa PREENCHER" não "$(contem 'por preencher' scripts/verificar.sh --staged)"
 git remote remove origin
+confere "no GitHub Actions do modelo não avisa PREENCHER" não "$(GITHUB_REPOSITORY=alguem/modelo-projeto-ia contem 'por preencher' scripts/verificar.sh --staged)"
 rm -f AGENTS.md
 confere "sem marcações não avisa PREENCHER" não "$(contem 'por preencher' scripts/verificar.sh --staged)"
 
