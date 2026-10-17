@@ -1,0 +1,23 @@
+# Lista única de caminhos protegidos — lida pelo pre-commit e pelos hooks do Claude.
+# Explicação de cada linha: AGENTS.md § Gestão de Dados e Visibilidade.
+#
+# Formato: <tipo> <padrão>, um por linha.
+#   segredo  nunca ler, exibir, modificar nem commitar
+#   dado     dado real: pode ler, nunca commitar sem ordem explícita (PERMITIR_DADOS=1)
+#
+# Padrão relativo à raiz do repo, estilo glob (* casa qualquer coisa, inclusive /).
+# Padrão sem "/" casa pelo nome do arquivo em qualquer pasta.
+# Pasta inteira: termine com /*  (ex.: credentials/*)
+#
+# Exemplos genéricos — ajuste para o projeto:
+segredo .env
+segredo .env.*
+segredo *.pem
+segredo *.key
+segredo *.p12
+segredo id_rsa*
+segredo id_ed25519*
+# segredo credentials/*
+# segredo auth.json
+# dado    data/*
+# dado    *.xlsx

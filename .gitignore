@@ -1,0 +1,28 @@
+# Ambientes e caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Segredos (ver também .caminhos-protegidos)
+.env
+.env.*
+!.env.exemplo
+*.pem
+*.key
+*.p12
+
+# Configuração pessoal de cada máquina/pessoa — nunca versionar ([R-MAQUINA])
+.claude/settings.local.json
+CLAUDE.local.md
+*.local.*
+
+# Sistema e editores
+.DS_Store
+*.swp
+.idea/
+.vscode/

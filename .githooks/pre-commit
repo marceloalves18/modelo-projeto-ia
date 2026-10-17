@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Instalado por: git config core.hooksPath .githooks  (README.md, AGENTS.md § Setup)
+exec "$(git rev-parse --show-toplevel)/scripts/verificar.sh" --staged
