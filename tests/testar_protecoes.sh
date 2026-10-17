@@ -174,6 +174,7 @@ confere "Read de segredo em subpasta" bloqueia "$(arquivo Read sub/auth.json)"
 confere "Read de dado" libera "$(arquivo Read planilha.xlsx)"
 confere "Edit em .githooks/pre-commit" pergunta "$(arquivo Edit "$REPO/.githooks/pre-commit")"
 confere "Edit em .caminhos-protegidos" pergunta "$(arquivo Edit .caminhos-protegidos)"
+confere "Edit em .codex/hooks.json" pergunta "$(arquivo Edit .codex/hooks.json)"
 
 confere "git add -A" bloqueia "$(bash_cmd 'git add -A')"
 confere "git add ." bloqueia "$(bash_cmd 'git add . && git status')"
@@ -199,6 +200,48 @@ confere "mexer no core.hooksPath" pergunta "$(bash_cmd 'git config --unset core.
 confere "systemctl restart" pergunta "$(bash_cmd 'sudo systemctl restart nginx')"
 confere "git pull --rebase" libera "$(bash_cmd 'git pull --rebase')"
 
+# --- Hook PreToolUse do Codex (guarda.py --codex) ------------------------
+# Sem CLAUDE_PROJECT_DIR: a raiz vem do git, a partir do cwd da sessão.
+hook_codex() {
+    local cwd="$1" ferramenta="$2" comando="$3" saida codigo
+    saida="$(
+        python3 -c 'import json, sys; print(json.dumps({"tool_name": sys.argv[1], "cwd": sys.argv[2], "turn_id": "t", "tool_input": {"command": sys.argv[3]}}))' "$ferramenta" "$cwd" "$comando" \
+            | env -u CLAUDE_PROJECT_DIR python3 .claude/hooks/guarda.py --codex 2>&1
+    )"
+    codigo=$?
+    if (( codigo == 2 )); then
+        echo bloqueia
+    elif [[ "$saida" == *'"ask"'* ]]; then
+        echo pergunta
+    else
+        echo libera
+    fi
+}
+patch() {
+    printf '*** Begin Patch\n*** %s: %s\n+linha\n*** End Patch\n' "$1" "$2"
+}
+mkdir -p "$REPO/sub"
+confere "Codex: patch dentro do repo" libera "$(hook_codex "$REPO" apply_patch "$(patch 'Add File' docs/x.md)")"
+confere "Codex: patch em segredo" bloqueia "$(hook_codex "$REPO" apply_patch "$(patch 'Update File' .env)")"
+confere "Codex: patch fora do repo" bloqueia "$(hook_codex "$REPO" apply_patch "$(patch 'Add File' ../../fora.md)")"
+confere "Codex: patch movendo para ~/.codex" bloqueia "$(hook_codex "$REPO" apply_patch "$(printf '*** Begin Patch\n*** Update File: docs/x.md\n*** Move to: ~/.codex/memoria.md\n*** End Patch\n')")"
+confere "Codex: raiz pelo git a partir de subpasta" libera "$(hook_codex "$REPO/sub" apply_patch "$(patch 'Add File' ../docs/y.md)")"
+confere "Codex: segredo visto de subpasta" bloqueia "$(hook_codex "$REPO/sub" apply_patch "$(patch 'Update File' ../.env)")"
+confere "Codex: git add -A" bloqueia "$(hook_codex "$REPO" Bash 'git add -A')"
+confere "Codex: cat de segredo" bloqueia "$(hook_codex "$REPO" Bash 'cat .env')"
+confere "Codex: destrutivo vira bloqueio (sem ask)" bloqueia "$(hook_codex "$REPO" Bash 'rm -rf build')"
+confere "Codex: comando comum" libera "$(hook_codex "$REPO" Bash 'git status')"
+confere ".codex/hooks.json válido e aponta para scripts existentes" sim "$(
+    python3 - "$RAIZ" << 'PY'
+import json, os, re, sys
+raiz = sys.argv[1]
+dados = json.load(open(os.path.join(raiz, ".codex/hooks.json"), encoding="utf-8"))
+comandos = [h["command"] for grupos in dados["hooks"].values() for g in grupos for h in g["hooks"]]
+scripts = [m for c in comandos for m in re.findall(r"/(\.claude/hooks/[\w.]+)", c)]
+print("sim" if scripts and all(os.path.isfile(os.path.join(raiz, s)) for s in scripts) else "não")
+PY
+)"
+
 # --- Hook SessionStart do Claude (sessao.sh) ------------------------------
 aviso() {
     contem "$1" .claude/hooks/sessao.sh
@@ -206,6 +249,9 @@ aviso() {
 confere "sessão: sem aviso de pre-commit quando instalado" não "$(aviso 'pre-commit NÃO')"
 git config --unset core.hooksPath
 confere "sessão: avisa pre-commit ausente" sim "$(aviso 'pre-commit NÃO')"
+head -c 20481 /dev/zero | tr '\0' 'a' > CONTEXT.md
+confere "sessão: acha a raiz pelo git (Codex, de subpasta)" sim "$(cd sub && CLAUDE_PROJECT_DIR= contem 'CONTEXT.md passou' "$REPO/.claude/hooks/sessao.sh")"
+rm -f CONTEXT.md
 git config core.hooksPath .githooks
 confere "sessão: avisa gitleaks ausente" sim "$(PATH="$path_sem_gitleaks" aviso 'gitleaks não está instalado')"
 

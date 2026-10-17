@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Hook SessionStart do Claude Code: o que ele imprime vira contexto da sessão.
+# Hook SessionStart do Claude Code e do Codex: o que ele imprime vira contexto da sessão.
 # Avisa o que [R-SINCRONIA], [R-PASSAGEM], [R-TAMANHO] e o setup exigem antes de começar.
-cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
+cd "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2> /dev/null || echo .)}" || exit 0
 git rev-parse --is-inside-work-tree > /dev/null 2>&1 || exit 0
 
 avisos=()

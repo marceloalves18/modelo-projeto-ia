@@ -34,6 +34,8 @@ gitleaks version   # se der "command not found", ponha ~/.local/bin no PATH (no 
 
 <!-- PREENCHER: venv, dependências, variáveis de ambiente (ver AGENTS.md § Setup em Novo Ambiente). -->
 
+**Codex:** na primeira sessão no projeto, o Codex pede para revisar e **confiar** nos hooks de `.codex/hooks.json` (e de novo sempre que eles mudarem). Confira que apontam para `.claude/hooks/` e confie — sem isso ele roda sem as proteções.
+
 ## Como se trabalha aqui
 
 O projeto é usado em mais de uma máquina, por mais de uma pessoa e com mais de um agente de IA (Claude Code, Codex, Gemini…). Para isso funcionar:

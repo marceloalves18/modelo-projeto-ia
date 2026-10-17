@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Hook PreToolUse do Claude Code: garante [R-FORA-DO-REPO], [R-PROTEGIDOS] e [R-DESTRUTIVO].
+"""Hook PreToolUse do Claude Code e do Codex: garante [R-FORA-DO-REPO], [R-PROTEGIDOS]
+e [R-DESTRUTIVO].
 
-Bloqueio: exit 2 com o motivo no stderr (o Claude vê o motivo).
-Confirmação do usuário: JSON com permissionDecision "ask".
+Bloqueio: exit 2 com o motivo no stderr (o agente vê o motivo) — igual nos dois.
+Confirmação do usuário: JSON com permissionDecision "ask" no Claude. O Codex não
+suporta "ask" (marca o hook como falho e deixa passar), então lá vira bloqueio.
+Uso: guarda.py (Claude) | guarda.py --codex
 Só a biblioteca padrão, para funcionar em qualquer máquina com python3.
 """
 import fnmatch
@@ -10,10 +13,12 @@ import json
 import os
 import re
 import shlex
+import subprocess
 import sys
 import tempfile
 
-_RAIZ = os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
+_CODEX = "--codex" in sys.argv[1:]
+_RAIZ = ""  # definida em main(): CLAUDE_PROJECT_DIR no Claude, raiz do git no Codex
 
 # Rascunho de sessão do agente (descartável, permitido por [R-FORA-DO-REPO]).
 _TEMP_AGENTE = os.path.join(os.path.realpath(tempfile.gettempdir()), "claude-")
@@ -24,6 +29,7 @@ _PROTECOES = (
     ".githooks/*",
     ".claude/settings.json",
     ".claude/hooks/*",
+    ".codex/hooks.json",
     "scripts/verificar.sh",
 )
 
@@ -89,6 +95,8 @@ def _bloquear(motivo):
 
 
 def _perguntar(motivo):
+    if _CODEX:
+        _bloquear(f"{motivo} No Codex o hook não consegue pedir confirmação: mostre o comando ao usuário e deixe que ele o rode.")
     saida = {
         "hookSpecificOutput": {
             "hookEventName": "PreToolUse",
@@ -161,14 +169,35 @@ def _checar_bash(comando, cwd, regras):
             _perguntar(f"Comando destrutivo ({descricao}) — confirme com o usuário ([R-DESTRUTIVO]).")
 
 
+# Caminhos que um apply_patch do Codex cria, altera, apaga ou para onde move.
+_PATCH_ARQUIVO = re.compile(r"^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+?)\s*$", re.MULTILINE)
+
+
+def _raiz_do_projeto(cwd):
+    if os.environ.get("CLAUDE_PROJECT_DIR"):
+        return os.path.realpath(os.environ["CLAUDE_PROJECT_DIR"])
+    try:
+        saida = subprocess.run(
+            ["git", "-C", cwd, "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return os.path.realpath(saida.stdout.strip())
+    except (OSError, subprocess.CalledProcessError):
+        return os.path.realpath(cwd)
+
+
 def main():
+    global _RAIZ
     try:
         entrada = json.load(sys.stdin)
     except json.JSONDecodeError:
         return
     ferramenta = entrada.get("tool_name", "")
     parametros = entrada.get("tool_input") or {}
-    cwd = entrada.get("cwd") or _RAIZ
+    cwd = entrada.get("cwd") or os.getcwd()
+    _RAIZ = _raiz_do_projeto(cwd)
     regras = _carregar_protegidos()
 
     if ferramenta in ("Write", "Edit", "NotebookEdit"):
@@ -181,6 +210,9 @@ def main():
             _checar_arquivo(caminho, cwd, False, regras)
     elif ferramenta == "Bash":
         _checar_bash(parametros.get("command", ""), cwd, regras)
+    elif ferramenta == "apply_patch":
+        for caminho in _PATCH_ARQUIVO.findall(parametros.get("command", "")):
+            _checar_arquivo(caminho, cwd, True, regras)
 
 
 if __name__ == "__main__":

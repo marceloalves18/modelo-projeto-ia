@@ -1,0 +1,27 @@
+{
+  "description": "Proteções do projeto (AGENTS.md § Proteções automáticas). Mesmos scripts dos hooks do Claude Code.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/sessao.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.claude/hooks/guarda.py\" --codex"
+          }
+        ]
+      }
+    ]
+  }
+}
