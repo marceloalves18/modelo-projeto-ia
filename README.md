@@ -10,19 +10,27 @@ cd <pasta>
 git config core.hooksPath .githooks    # liga o pre-commit — sem isso você fica sem proteção
 ```
 
-**gitleaks** (obrigatório em cada máquina, `[R-SETUP]` no AGENTS.md): o pre-commit usa para achar segredo dentro dos arquivos; sem ele, só barra pelos nomes de `.caminhos-protegidos`. Precisa da versão **8.19 ou mais nova** — a do `apt` do Ubuntu 24.04 (8.16) não serve. Instalação da release oficial, sem sudo (Linux x64; outros sistemas: [página de releases](https://github.com/gitleaks/gitleaks/releases)):
+**gitleaks** (obrigatório em cada máquina, `[R-SETUP]` no AGENTS.md): o pre-commit usa para achar segredo dentro dos arquivos; sem ele, só barra pelos nomes de `.caminhos-protegidos`. Precisa da versão **8.19 ou mais nova** — a do `apt` do Ubuntu 24.04 (8.16) não serve. Release oficial, com checksum, sem sudo.
+
+*Linux e macOS* (detecta sistema e arquitetura):
 
 ```bash
 V=8.30.1
+case "$(uname -s)" in Linux) SO=linux ;; Darwin) SO=darwin ;; esac
+case "$(uname -m)" in x86_64|amd64) ARQ=x64 ;; arm64|aarch64) ARQ=arm64 ;; esac
+ARQUIVO="gitleaks_${V}_${SO}_${ARQ}.tar.gz"
 D="$(mktemp -d)" && cd "$D"
-curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v$V/gitleaks_${V}_linux_x64.tar.gz"
+curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v$V/$ARQUIVO"
 curl -fsSLO "https://github.com/gitleaks/gitleaks/releases/download/v$V/gitleaks_${V}_checksums.txt"
-grep linux_x64.tar.gz "gitleaks_${V}_checksums.txt" | sha256sum -c -    # tem que dizer OK/SUCESSO
-tar -xzf "gitleaks_${V}_linux_x64.tar.gz" gitleaks
+grep " $ARQUIVO\$" "gitleaks_${V}_checksums.txt" > conferir.txt
+if command -v sha256sum > /dev/null; then sha256sum -c conferir.txt; else shasum -a 256 -c conferir.txt; fi   # tem que dizer OK/SUCESSO
+tar -xzf "$ARQUIVO" gitleaks
 mkdir -p ~/.local/bin && install -m 0755 gitleaks ~/.local/bin/gitleaks
 cd - && rm -rf "$D"
-gitleaks version
+gitleaks version   # se der "command not found", ponha ~/.local/bin no PATH (no macOS não vem por padrão)
 ```
+
+*Windows:* baixe `gitleaks_8.30.1_windows_x64.zip` da [página de releases](https://github.com/gitleaks/gitleaks/releases), confira o SHA-256 com o `gitleaks_8.30.1_checksums.txt` (`Get-FileHash` no PowerShell), extraia o `gitleaks.exe` para uma pasta que esteja no PATH e confira com `gitleaks version` no **Git Bash** — é nele que os hooks rodam. Os hooks do Claude precisam também do comando `python3` no PATH.
 
 <!-- PREENCHER: venv, dependências, variáveis de ambiente (ver AGENTS.md § Setup em Novo Ambiente). -->
 

@@ -6,7 +6,11 @@ git rev-parse --is-inside-work-tree > /dev/null 2>&1 || exit 0
 
 avisos=()
 
-if GIT_TERMINAL_PROMPT=0 timeout 15 git fetch --quiet 2> /dev/null; then
+limite_tempo=()
+if command -v timeout > /dev/null 2>&1; then
+    limite_tempo=(timeout 15)   # não existe no macOS: lá o fetch roda sem limite
+fi
+if GIT_TERMINAL_PROMPT=0 "${limite_tempo[@]}" git fetch --quiet 2> /dev/null; then
     if git rev-parse '@{u}' > /dev/null 2>&1; then
         atras="$(git rev-list --count 'HEAD..@{u}')"
         if (( atras > 0 )); then

@@ -1,0 +1,8 @@
+# Finais de linha fixos em LF: script com CRLF (padrão do Windows) quebra no
+# bash e o pre-commit para de funcionar sem mensagem clara ([R-SETUP]).
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+.githooks/* text eol=lf
+.caminhos-protegidos text eol=lf
+*.yml text eol=lf

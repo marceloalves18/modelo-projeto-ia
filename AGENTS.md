@@ -136,6 +136,7 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ├── CONTEXT.md                pendências entre sessões (quando houver)
 ├── .caminhos-protegidos      segredos e dados reais (lista única)
 ├── .githooks/                hooks de git versionados
+├── .gitattributes            scripts sempre com final de linha LF (Windows)
 ├── .claude/                  configuração e hooks do Claude Code (versionados)
 ├── .github/workflows/        verificação no GitHub a cada push
 ├── scripts/verificar.sh      verificação única do projeto

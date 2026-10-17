@@ -5,7 +5,8 @@
 #   scripts/verificar.sh --staged   só as checagens do que está no stage (usado pelo pre-commit)
 #
 # Commit autorizado de um "dado" ([R-PROTEGIDOS]): PERMITIR_DADOS=1 git commit ...
-set -uo pipefail
+# Sem -u: o bash 3.2 do macOS trata lista vazia como variável não definida.
+set -o pipefail
 
 RAIZ="$(git rev-parse --show-toplevel)" || exit 1
 cd "$RAIZ" || exit 1

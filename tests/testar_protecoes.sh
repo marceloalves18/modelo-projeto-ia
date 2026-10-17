@@ -59,6 +59,12 @@ token_falso() {
     printf 'ghp_%s' "$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 36)"
 }
 
+# --- Finais de linha (.gitattributes) ------------------------------------
+# Script com CRLF quebra no bash: no Windows o git converteria sem o .gitattributes.
+for script in scripts/verificar.sh .githooks/pre-commit .claude/hooks/guarda.py .claude/hooks/sessao.sh tests/testar_protecoes.sh; do
+    confere "eol=lf em $script" lf "$(git -C "$RAIZ" check-attr eol -- "$script" | awk '{print $NF}')"
+done
+
 # --- pre-commit e verificar.sh --staged -----------------------------------
 echo ok > nota.txt && git add nota.txt
 confere "commit de arquivo comum" passa "$(tentar_commit env)"
