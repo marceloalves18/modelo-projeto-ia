@@ -139,6 +139,7 @@ Detalhes de cada área ficam em `docs/modulos/` e são lidos **só quando a tare
 ├── README.md                 setup para pessoas
 ├── CONTEXT.md                pendências entre sessões (quando houver)
 ├── .caminhos-protegidos      segredos e dados reais (lista única)
+├── .env.exemplo              nomes das variáveis de ambiente, sem valores
 ├── .githooks/                hooks de git versionados
 ├── .gitattributes            scripts sempre com final de linha LF (Windows)
 ├── .claude/                  configuração e hooks do Claude Code (versionados)

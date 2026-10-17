@@ -8,6 +8,7 @@
 git clone <url-do-repositório>
 cd <pasta>
 git config core.hooksPath .githooks    # liga o pre-commit — sem isso você fica sem proteção
+cp .env.exemplo .env                   # e preencha os valores (o .env nunca vai para o git)
 ```
 
 **gitleaks** (obrigatório em cada máquina, `[R-SETUP]` no AGENTS.md): o pre-commit usa para achar segredo dentro dos arquivos; sem ele, só barra pelos nomes de `.caminhos-protegidos`. Precisa da versão **8.19 ou mais nova** — a do `apt` do Ubuntu 24.04 (8.16) não serve. Release oficial, com checksum, sem sudo.
