@@ -90,6 +90,19 @@ for par in "AGENTS.md:$LIMITE_AGENTS" "CONTEXT.md:$LIMITE_CONTEXT"; do
     fi
 done
 
+# --- Modelo não preenchido -----------------------------------------------
+# No próprio repositório do modelo as marcações são o conteúdo, não pendência.
+eh_o_modelo() {
+    [[ "${GITHUB_REPOSITORY:-}" == */modelo-projeto-ia ]] \
+        || git remote get-url origin 2> /dev/null | grep -qE '/modelo-projeto-ia(\.git)?$'
+}
+if ! eh_o_modelo; then
+    pendentes="$(cat AGENTS.md README.md 2> /dev/null | grep -c -e '<!-- PREENCHER' -e '^> \*\*Projeto novo:\*\*')"
+    if (( pendentes > 0 )); then
+        echo "⚠ $pendentes linha(s) do modelo ainda por preencher no AGENTS.md/README.md (<!-- PREENCHER -->): agentes estão lendo regras com lacunas." >&2
+    fi
+fi
+
 # --- Segredo no conteúdo ([R-SETUP]) -------------------------------------
 # Sem gitleaks >= 8.19 o commit passa com aviso: bloquear levaria ao --no-verify,
 # que desliga também a checagem por nome acima.

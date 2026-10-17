@@ -99,6 +99,15 @@ confere "AGENTS.md acima de 28 KB" bloqueia "$(tentar_commit env)"
 head -c 20481 /dev/zero | tr '\0' 'a' > CONTEXT.md && git add CONTEXT.md
 confere "CONTEXT.md acima de 20 KB" bloqueia "$(tentar_commit env)"
 
+# --- Aviso de modelo não preenchido --------------------------------------
+printf '# AGENTS.md\n<!-- PREENCHER: algo -->\n' > AGENTS.md
+confere "avisa PREENCHER pendente" sim "$(contem 'por preencher' scripts/verificar.sh --staged)"
+git remote add origin https://github.com/alguem/modelo-projeto-ia.git
+confere "no próprio modelo não avisa PREENCHER" não "$(contem 'por preencher' scripts/verificar.sh --staged)"
+git remote remove origin
+rm -f AGENTS.md
+confere "sem marcações não avisa PREENCHER" não "$(contem 'por preencher' scripts/verificar.sh --staged)"
+
 # --- gitleaks: ausente, antigo e atual ------------------------------------
 path_sem_gitleaks="$(
     IFS=:

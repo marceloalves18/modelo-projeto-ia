@@ -1,6 +1,8 @@
 # AGENTS.md
 
-> **Modelo v1.0 (2026-10-17)** — derivado de `modelo-projeto-ia`. Ao usar num projeto novo: preencha as seções marcadas com `<!-- PREENCHER -->`, apague este aviso e mantenha a linha da versão (ela diz de qual versão do modelo o projeto saiu).
+> **Modelo:** v1.0 (2026-10-17), de `modelo-projeto-ia`. **Não apague esta linha**: ela diz de qual versão do modelo o projeto saiu.
+>
+> **Projeto novo:** preencha as seções marcadas com `<!-- PREENCHER -->` (aqui e no `README.md`) e apague esta linha. O `scripts/verificar.sh` avisa enquanto restar alguma.
 
 Instruções para **qualquer assistente de IA** (Claude Code, Codex, Gemini CLI, Copilot, Cursor, Aider…) e para **qualquer pessoa** que trabalhe neste repositório. É a **fonte de verdade única**: `CLAUDE.md` e `GEMINI.md` só importam este arquivo e acrescentam dicas da própria ferramenta. O projeto é usado **em mais de uma máquina, por mais de uma pessoa e por mais de um agente** — tudo que for preciso para continuar o trabalho tem que estar no repositório.
 
