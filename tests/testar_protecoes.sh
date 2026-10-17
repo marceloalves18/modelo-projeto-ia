@@ -43,6 +43,15 @@ confere() {
     fi
 }
 
+# "sim" se a saída do comando contém o texto. Guarda a saída antes de procurar:
+# com pipefail, "cmd | grep -q" daria falso negativo quando o grep fecha o pipe cedo.
+contem() {
+    local texto="$1" saida
+    shift
+    saida="$("$@" 2>&1)"
+    [[ "$saida" == *"$texto"* ]] && echo sim || echo não
+}
+
 # Commit com o que estiver no stage; desfaz o stage e os arquivos novos depois.
 tentar_commit() {
     local resultado=bloqueia
@@ -183,7 +192,7 @@ confere "git pull --rebase" libera "$(bash_cmd 'git pull --rebase')"
 
 # --- Hook SessionStart do Claude (sessao.sh) ------------------------------
 aviso() {
-    .claude/hooks/sessao.sh | grep -q -- "$1" && echo sim || echo não
+    contem "$1" .claude/hooks/sessao.sh
 }
 confere "sessão: sem aviso de pre-commit quando instalado" não "$(aviso 'pre-commit NÃO')"
 git config --unset core.hooksPath
