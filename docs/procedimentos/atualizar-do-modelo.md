@@ -16,9 +16,12 @@ O script só lê. Repositório do modelo é privado: a máquina precisa de acess
 
 - **Arquivo igual em todo projeto** (`.githooks/`, `scripts/verificar.sh`, `.claude/hooks/`, `.codex/hooks.json`, `tests/testar_protecoes.sh`, `.gitattributes`, `.github/workflows/`): copie a versão do modelo. Se o projeto mudou algo de propósito nele, reaplique a mudança por cima e registre o motivo no `AGENTS.md`.
   ```bash
-  git fetch --depth 1 https://github.com/marceloalves18/modelo-projeto-ia.git main
-  git checkout FETCH_HEAD -- scripts/verificar.sh    # um arquivo por vez
+  D="$(mktemp -d)"
+  git clone -q --depth 1 https://github.com/marceloalves18/modelo-projeto-ia.git "$D/modelo"
+  cp "$D/modelo/scripts/verificar.sh" scripts/verificar.sh    # um arquivo por vez
+  rm -rf "$D"
   ```
+  Não use `git fetch --depth 1` do modelo dentro do projeto: isso deixa o repositório do projeto raso (shallow) e esconde o histórico local.
 - **`scripts/verificar.sh`:** a seção de testes do projeto (a que era `PREENCHER`) é do projeto — preserve-a ao copiar.
 - **`AGENTS.md` e `README.md`:** **não** copie inteiros. Compare só as seções que vêm do modelo (Portão, Regras universais, Definição de Pronto, Proteções automáticas) e traga as mudanças trecho a trecho. As seções do projeto ficam como estão.
 - **`.caminhos-protegidos`:** é do projeto. Do modelo, traga só linhas de exemplo novas que fizerem sentido.

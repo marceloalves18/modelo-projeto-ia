@@ -276,6 +276,8 @@ rm .githooks/pre-commit
 confere "comparar-modelo: acusa arquivo que falta" sim "$(MODELO_URL="$TMP/remoto.git" contem 'falta no projeto:   .githooks/pre-commit' scripts/comparar-modelo.sh)"
 git checkout -q -- .githooks/pre-commit
 confere "comparar-modelo: não altera nada" "" "$(git status --porcelain)"
+confere "comparar-modelo: não deixa o repositório raso" false "$(git rev-parse --is-shallow-repository)"
+confere "comparar-modelo: histórico local intacto" "$(git rev-list --count HEAD)" "$(MODELO_URL="$TMP/remoto.git" scripts/comparar-modelo.sh > /dev/null 2>&1; git rev-list --count HEAD)"
 
 if (( falhas > 0 )); then
     echo "testar_protecoes.sh: $falhas de $total testes falharam." >&2

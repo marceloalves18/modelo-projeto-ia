@@ -36,34 +36,39 @@ ARQUIVOS=(
     docs/modulos/_modelo.md
 )
 
-if ! GIT_TERMINAL_PROMPT=0 git fetch -q --depth 1 "$MODELO_URL" main 2> /dev/null; then
+# O modelo é baixado numa pasta temporária à parte. Nunca "git fetch --depth" aqui
+# dentro: isso deixaria o repositório do projeto raso e esconderia o histórico.
+MODELO="$(mktemp -d)"
+trap 'rm -rf "$MODELO"' EXIT
+if ! GIT_TERMINAL_PROMPT=0 git clone -q --depth 1 --branch main "$MODELO_URL" "$MODELO/repo" 2> /dev/null; then
     echo "✗ não foi possível buscar o modelo em $MODELO_URL (rede, proxy ou acesso ao repositório privado: gh auth setup-git)." >&2
     exit 1
 fi
-MODELO="$(git rev-parse FETCH_HEAD)"
+MODELO="$MODELO/repo"
 
 versao() {
     grep -m1 -oE 'v[0-9]+\.[0-9]+ \([0-9-]+\)'
 }
 versao_projeto="$(versao < AGENTS.md 2> /dev/null)"
-versao_modelo="$(git show "$MODELO:AGENTS.md" 2> /dev/null | versao)"
+versao_modelo="$(versao < "$MODELO/AGENTS.md" 2> /dev/null)"
 echo "Projeto derivado do modelo ${versao_projeto:-(versão não encontrada no AGENTS.md)}; modelo atual: ${versao_modelo:-?}"
 
 diferentes=0
 for arquivo in "${ARQUIVOS[@]}"; do
     no_modelo=1
-    git cat-file -e "$MODELO:$arquivo" 2> /dev/null || no_modelo=""
+    [[ -e "$MODELO/$arquivo" ]] || no_modelo=""
     if [[ -z "$no_modelo" && ! -e "$arquivo" ]]; then
         continue
     elif [[ -z "$no_modelo" ]]; then
         echo "  só no projeto:      $arquivo (não existe no modelo: criado aqui, ou removido de lá)"
     elif [[ ! -e "$arquivo" ]]; then
         echo "  falta no projeto:   $arquivo"
-    elif git diff --quiet "$MODELO" -- "$arquivo"; then
+    elif cmp -s "$MODELO/$arquivo" "$arquivo"; then
         continue
     else
-        echo "  diferente:          $arquivo ($(git diff --shortstat "$MODELO" -- "$arquivo" | sed 's/^ *//'))"
-        [[ -n "$DETALHES" ]] && git --no-pager diff "$MODELO" -- "$arquivo"
+        resumo="$(git diff --no-index --shortstat -- "$MODELO/$arquivo" "$arquivo" | sed 's/^ *//')"
+        echo "  diferente:          $arquivo ($resumo)"
+        [[ -n "$DETALHES" ]] && git --no-pager diff --no-index -- "$MODELO/$arquivo" "$arquivo"
     fi
     diferentes=$((diferentes + 1))
 done
