@@ -52,7 +52,7 @@ As regras têm **ID estável** (`[R-…]`): cite sempre pelo ID, nunca por núme
 
 **Segredos, dados e comandos perigosos**
 
-- **[R-PROTEGIDOS]** Os caminhos protegidos do projeto estão listados **num lugar só**: o arquivo [`.caminhos-protegidos`](./.caminhos-protegidos) na raiz (ver [Gestão de Dados](#gestão-de-dados-e-visibilidade)). Dois tipos:
+- **[R-PROTEGIDOS]** Os caminhos protegidos do projeto estão listados **num lugar só**: o arquivo [`.caminhos-protegidos`](./.caminhos-protegidos) na raiz (ver [Gestão de Dados](#gestão-de-dados-e-visibilidade)). Três tipos:
   - `segredo` — **nunca** ler, exibir, modificar nem versionar (credenciais, tokens, chaves, cookies de sessão).
   - `permitido` — exceção que vale antes dos outros dois, para um arquivo que casa com um padrão de `segredo` mas não é segredo (ex.: `.env.exemplo`, que lista as variáveis sem valores e **deve** ser versionado).
   - `dado` — dado real de uso; pode ser lido, mas **nunca entra num commit** sem ordem explícita do usuário, dada na própria sessão, para aquele commit específico (autorização não vale para outros commits nem para sessões futuras).
