@@ -199,7 +199,7 @@ A lista do que é `segredo` e do que é `dado` está em [`.caminhos-protegidos`]
 
 - `docs/modulos/` — detalhe por área, lido sob demanda pelo [Mapa de leitura](#mapa-de-leitura).
 - `docs/planejamentos/` — um arquivo por decisão ou plano (`AAAA-MM-DD_assunto.md`, modelo em `_modelo.md`), com contexto, decisão, alternativas e andamento.
-- `docs/procedimentos/` — guias de setup e operação. Trazer melhorias do modelo: `atualizar-do-modelo.md`.
+- `docs/procedimentos/` — guias de setup e operação. Trazer melhorias do modelo: `atualizar-do-modelo.md`; aplicar o modelo num projeto que já existe: `aplicar-em-projeto-existente.md`.
 
 Consulte antes de propor mudanças nas áreas já documentadas.
 
