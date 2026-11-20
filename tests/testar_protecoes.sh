@@ -153,6 +153,23 @@ else
     echo "⚠ testes com gitleaks real pulados: gitleaks ≥ 8.19 não instalado ([R-SETUP])." >&2
 fi
 
+# --- verificar.sh completo: projeto Python sem venv é falha, não aviso -----
+# Um testar_protecoes.sh de mentira na cópia evita a recursão; a cópia não tem venv/.
+mkdir -p tests
+printf '#!/usr/bin/env bash\nexit 0\n' > tests/testar_protecoes.sh
+chmod +x tests/testar_protecoes.sh
+confere "verificar.sh sem requirements.txt não exige venv" não "$(unset DENTRO_DO_TESTE; contem 'venv/ ausente' scripts/verificar.sh)"
+touch requirements.txt
+confere "verificar.sh com requirements.txt e sem venv avisa" sim "$(unset DENTRO_DO_TESTE; contem 'venv/ ausente' scripts/verificar.sh)"
+resultado=passa
+saida="$(env -u DENTRO_DO_TESTE scripts/verificar.sh 2>&1)" || resultado=falha
+[[ "$saida" == *"venv/ ausente"* ]] || resultado="sem a mensagem"
+confere "verificar.sh com requirements.txt e sem venv sai com erro e diz por quê" falha "$resultado"
+rm -f requirements.txt
+touch pyproject.toml
+confere "verificar.sh só com pyproject.toml não exige venv" não "$(unset DENTRO_DO_TESTE; contem 'venv/ ausente' scripts/verificar.sh)"
+rm -rf tests pyproject.toml
+
 # --- Hook PreToolUse do Claude (guarda.py) --------------------------------
 export CLAUDE_PROJECT_DIR="$REPO"
 rascunho="$(python3 -c 'import tempfile; print(tempfile.gettempdir())')/claude-teste/rascunho.txt"

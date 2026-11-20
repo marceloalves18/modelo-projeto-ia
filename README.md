@@ -33,7 +33,7 @@ gitleaks version   # se der "command not found", ponha ~/.local/bin no PATH (no 
 
 *Windows:* baixe `gitleaks_8.30.1_windows_x64.zip` da [página de releases](https://github.com/gitleaks/gitleaks/releases), confira o SHA-256 com o `gitleaks_8.30.1_checksums.txt` (`Get-FileHash` no PowerShell), extraia o `gitleaks.exe` para uma pasta que esteja no PATH e confira com `gitleaks version` no **Git Bash** — é nele que os hooks rodam. Os hooks do Claude precisam também do comando `python3` no PATH.
 
-<!-- PREENCHER: venv, dependências, variáveis de ambiente (ver AGENTS.md § Setup em Novo Ambiente). -->
+<!-- PREENCHER: venv (projeto Python: `python3 -m venv venv && venv/bin/pip install -r requirements.txt`; sem ele o `scripts/verificar.sh` falha), dependências, variáveis de ambiente (ver AGENTS.md § Setup em Novo Ambiente). -->
 
 **Codex:** na primeira sessão no projeto, o Codex pede para revisar e **confiar** nos hooks de `.codex/hooks.json` (e de novo sempre que eles mudarem). Confira que apontam para `.claude/hooks/` e confie — sem isso ele roda sem as proteções.
 

@@ -137,10 +137,16 @@ fi
 if [[ "$MODO" == "completo" && -z "${DENTRO_DO_TESTE:-}" ]]; then
     tests/testar_protecoes.sh || falha "testes das proteções (tests/testar_protecoes.sh)."
 
-    # PREENCHER: comandos de teste/lint do projeto. Exemplo para Python:
-    #   venv/bin/ruff format --check . || falha "formatação"
-    #   venv/bin/pytest -q             || falha "testes"
-    echo "⚠ nenhum teste do projeto configurado em scripts/verificar.sh (seção PREENCHER)." >&2
+    # Projeto Python: sem venv/ os testes e o lint seriam pulados sem ninguém ver. Aqui é falha, não aviso;
+    # o CI cria o venv (.github/workflows/verificar.yml).
+    if [[ -f requirements.txt && ! -x venv/bin/python && ! -x venv/Scripts/python.exe ]]; then
+        falha "venv/ ausente: python3 -m venv venv && venv/bin/pip install -r requirements.txt (README)."
+    else
+        # PREENCHER: comandos de teste/lint do projeto. Exemplo para Python:
+        #   venv/bin/ruff format --check . || falha "formatação"
+        #   venv/bin/pytest -q             || falha "testes"
+        echo "⚠ nenhum teste do projeto configurado em scripts/verificar.sh (seção PREENCHER)." >&2
+    fi
 fi
 
 if (( falhas > 0 )); then

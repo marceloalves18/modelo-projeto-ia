@@ -29,5 +29,15 @@ jobs:
           sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
           gitleaks version
 
+      - name: Ambiente virtual (só em projeto Python; versões fixas no requirements)
+        run: |
+          if [[ -f requirements.txt ]]; then
+            python3 -m venv venv
+            venv/bin/pip install --quiet -r requirements.txt
+            if [[ -f requirements-test.txt ]]; then
+              venv/bin/pip install --quiet -r requirements-test.txt
+            fi
+          fi
+
       - name: Verificação completa
         run: scripts/verificar.sh
