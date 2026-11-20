@@ -85,7 +85,7 @@ As regras têm **ID estável** (`[R-…]`): cite sempre pelo ID, nunca por núme
   - Antes de entregar, suba a página num navegador headless com **cópia** dos dados reais (respeitando `[R-DADOS-DE-TESTE]`) e confira o que o teste não vê: texto truncado (`scrollWidth > clientWidth`), sobreposição (`document.elementFromPoint`), fundo em rolagem, popup vazando da tela.
   - Proxy do ambiente (`http_proxy`) pode interceptar `127.0.0.1`: limpe as variáveis de proxy no processo do navegador.
 - **[R-DATAS]** Teste de lógica que depende de "hoje" nunca usa data fixa — calcule em tempo de execução (`now() - timedelta(days=N)`), senão o teste quebra sozinho meses depois.
-- **[R-DEPENDENCIAS]** Versões fixadas (`==` no `requirements.txt`, ou lockfile), ambiente virtual obrigatório (`venv`), nada instalado globalmente (nem `pip install --user`; use `venv` ou `pipx`).
+- **[R-DEPENDENCIAS]** Versões fixadas (`==` no `requirements.txt`, ou lockfile), ambiente virtual obrigatório (`venv`), nada instalado globalmente (nem `pip install --user`; use `venv` ou `pipx`). Com `requirements.txt` no projeto, o `scripts/verificar.sh` **falha** (não avisa) se o `venv/` não existir; o CI o cria.
 
 ## Definição de Pronto
 
@@ -109,7 +109,7 @@ As regras acima são o **porquê**; estas ferramentas são a **garantia**. Elas 
 | GitHub Actions | `.github/workflows/verificar.yml` | roda o `scripts/verificar.sh` completo, com gitleaks, a cada push: acusa o que escapou de qualquer máquina (setup não feito, `--no-verify`) | todos, sem depender de setup local |
 | GitHub (servidor) | configuração do repositório | push direto sem passar pelas regras da branch; segredo no push (secret scanning) | todos, se o plano da conta permitir |
 | Codex | `.codex/hooks.json` → os mesmos scripts de `.claude/hooks/` | o mesmo que no Claude, exceto: comando destrutivo é **bloqueado** (o Codex não sabe pedir confirmação) e a memória do Codex não é desligada por configuração | só o Codex, **depois de você confiar nos hooks** do projeto (o Codex pede revisão na primeira vez e a cada mudança neles) |
-| Claude Code | `.claude/settings.json` + `.claude/hooks/` | gravação fora do repo, acesso a `segredo`, `git add -A`/`.`, `--no-verify`; pede confirmação em comando destrutivo; avisa no início se a cópia está atrás do remoto, se o pre-commit não está instalado ou se falta o gitleaks; desliga a memória automática | só o Claude Code |
+| Claude Code | `.claude/settings.json` + `.claude/hooks/` | gravação fora do repo (`>`/`tee` entre aspas em texto, como mensagem de commit, não conta; dentro de `sh -c`, `eval`, `ssh` e `xargs` conta), acesso a `segredo`, `git add -A`/`.`, `--no-verify`; pede confirmação em comando destrutivo; avisa no início se a cópia está atrás do remoto, se o pre-commit não está instalado ou se falta o gitleaks; desliga a memória automática | só o Claude Code |
 
 - **Commit autorizado de um `dado`:** só com ordem explícita do usuário para aquele commit, e então `PERMITIR_DADOS=1 git commit …`. Não existe exceção para `segredo`.
 - **Falha no GitHub Actions** (✗ vermelho no commit): o problema já está no remoto. Corrija com um commit novo; se for segredo, **troque o segredo** (ele já vazou para o histórico) antes de qualquer outra coisa, e avise o usuário.
