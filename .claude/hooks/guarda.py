@@ -68,6 +68,54 @@ _DESTRUTIVOS = (
 _REDIRECAO = re.compile(r"(?:\d?>>?|\btee(?:\s+-a)?)\s*(['\"]?)([^\s'\";&|]+)\1")
 
 
+# Comandos que executam o texto entre aspas como shell: ali o '>' é redirecionamento de verdade.
+_EXECUTA_TEXTO = re.compile(
+    r"\b(?:ba|z|da|k|c|fi)?sh\b(?:\s+-\S+)*\s+-\w*c\b|\beval\b|\bssh\b|\bxargs\b|\bsu\s+-c\b|\bwatch\b"
+)
+
+
+def _posicoes_literais(comando):
+    """Para cada caractere, se ele é texto literal entre aspas (então um '>' ali não é redirecionamento).
+
+    Aspas simples: tudo dentro é literal. Aspas duplas: literal até achar $( ou crase; dali em diante
+    **nada** é literal, até o fim do comando (substituição de comando pode ter aspas, parênteses e case
+    dentro, que um analisador simples erraria; na dúvida, examina tudo). As próprias aspas não são
+    literais, para "> 'arquivo'" seguir checado. Aspas desbalanceadas: nada é literal.
+    """
+    literal = [False] * len(comando)
+    if _EXECUTA_TEXTO.search(comando):
+        return literal  # bash -c "...", eval, ssh...: o texto entre aspas é comando
+    estado = None  # None, "'" ou '"'
+    i = 0
+    while i < len(comando):
+        c = comando[i]
+        if estado is None:
+            if c == "\\":
+                i += 2
+                continue
+            if c in "'\"":
+                estado = c
+        elif estado == "'":
+            if c == "'":
+                estado = None
+            else:
+                literal[i] = True
+        elif c == "`" or comando.startswith("$(", i):
+            return literal  # daqui em diante é comando: examina tudo
+        elif c == '"':
+            estado = None
+        else:
+            literal[i] = True
+            if c == "\\" and i + 1 < len(comando):
+                literal[i + 1] = True
+                i += 2
+                continue
+        i += 1
+    if estado is not None:
+        return [False] * len(comando)
+    return literal
+
+
 def _carregar_protegidos():
     caminho = os.path.join(_RAIZ, ".caminhos-protegidos")
     regras = []
@@ -162,7 +210,11 @@ def _checar_bash(comando, cwd, regras):
         if relativo is not None:
             _checar_segredo(relativo, regras)
 
-    for _, destino in _REDIRECAO.findall(comando):
+    literal = _posicoes_literais(comando)
+    for achado in _REDIRECAO.finditer(comando):
+        if literal[achado.start()]:  # '>' ou tee dentro de aspas: é texto (mensagem de commit, echo)
+            continue
+        destino = achado.group(2)
         if destino.startswith("&") or destino == "/dev/null":
             continue
         _checar_arquivo(destino, cwd, True, regras)
